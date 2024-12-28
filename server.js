@@ -38,6 +38,9 @@ app.register(fastifyEnv, {
             PORT: {
                 type: "integer",
                 default: 3000
+            },
+            ROOTREDIRECT: {
+                type: "string"
             }
         }
     }

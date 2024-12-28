@@ -1,8 +1,24 @@
+import fastifyPlugin from "fastify-plugin";
 import { existsSync, readFileSync } from "fs";
 import path from "path";
 import { env } from "process";
 
 async function routes(fastify, options) {
+
+    fastify.get("/", async (request, reply) => {
+        if(fastify.getEnvs().ROOTREDIRECT != "") {
+            reply.redirect(fastify.getEnvs().ROOTREDIRECT);
+        } else {
+            return {
+                message: "project by ollie dean",
+                link: "https://ollie.cool/"
+            };
+        }
+
+
+
+    });
+
     fastify.get("/:link", async (request, reply) => {
         var link = fastify.db.prepare("SELECT * FROM links WHERE short = ?").get(request.params.link);
         if (!link) {

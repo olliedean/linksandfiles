@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "fs";
 import path from "path";
+import { env } from "process";
 
 async function routes(fastify, options) {
     fastify.get("/:link", async (request, reply) => {
@@ -34,6 +35,28 @@ async function routes(fastify, options) {
             reply.redirect(link.url);
             fastify.db.prepare("UPDATE links SET visits = visits + 1 WHERE short = ?").run(request.params.link);
         }
+    });
+
+    fastify.post("/shorten", async (request, reply) => {
+        var auth = request.body.password;
+        if(auth != env.PASSWORD) {
+            reply.code(401);
+            return { error: "Invalid password" };
+        }
+
+        var exists = fastify.db.prepare("SELECT * FROM links WHERE short = ?").get(request.body.short);
+        if (exists) {
+            reply.code(409);
+            return { error: "Short link already exists" };
+        }
+        if(request.body.url == "") {
+            reply.code(400);
+            return { error: "URL is required" };
+        }
+
+        var link = fastify.db.prepare("INSERT INTO links (url, short, creator, visits) VALUES (?, ?, ?, 0)").run(request.body.url, request.body.short, request.body.creator);
+        fastify.log.info("Shortened link: " + request.body.short + " -> " + request.body.url);
+        return { short: request.body.short };
     });
 }
 

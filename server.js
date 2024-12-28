@@ -5,6 +5,7 @@ import path from "path";
 import fastifyRequestLogger from "@mgcrea/fastify-request-logger";
 import db from "./db.js";
 import routes from "./routes/index.js";
+import fastifyEnv from "@fastify/env";
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const app = fastify({
@@ -24,6 +25,24 @@ const app = fastify({
 });
 
 app.register(fastifyRequestLogger);
+app.register(fastifyEnv, {
+    dotenv: true,
+    data: process.env,
+    schema: {
+        type: "object",
+        required: ["PASSWORD", "PORT"],
+        properties: {
+            PASSWORD: {
+                type: "string",
+            },
+            PORT: {
+                type: "integer",
+                default: 3000
+            }
+        }
+    }
+});
+await app.after();
 
 app.register(formBodyPlugin);
 
@@ -39,7 +58,7 @@ app.register(routes, {
     dependencies: ["@fastify/static"]
 });
 
-app.listen({port: 3000}, (err, address) => {
+app.listen({port: app.getEnvs().PORT}, (err, address) => {
     if (err) {
         console.error(err);
         process.exit(1);

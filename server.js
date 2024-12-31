@@ -61,7 +61,7 @@ app.register(routes, {
     dependencies: ["@fastify/static"]
 });
 
-app.listen({port: app.getEnvs().PORT}, (err, address) => {
+app.listen({port: app.getEnvs().PORT, host: "0.0.0.0"}, (err, address) => {
     if (err) {
         console.error(err);
         process.exit(1);
